@@ -1,9 +1,9 @@
-# .github/workflows/cd-automatic.yml .
+# .github/workflows/cd-automatic.yml
 name: Automatic Production Deployment (CD)
 on:
   push:
     branches: [ main ]
-    # No pull_request trigger - only on push to main
+  # No pull_request trigger - only on push to main
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -50,4 +50,4 @@ jobs:
         run: |
           echo " Sending deployment notification to team..."
           echo " Subject: [AUTO] New version $(git rev-parse --short HEAD) deployed to Production"
-          echo " Status: SUCCESS
+          echo " Status: SUCCESS"
