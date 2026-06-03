@@ -1,34 +1,45 @@
-# .github/workflows/cd-automatic.yml
 name: Automatic Production Deployment (CD)
+
 on:
   push:
     branches: [ main ]
-  # No pull_request trigger - only on push to main
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
+
       - name: Install dependencies
         run: npm install
+
       - name: Run tests
         run: npm test
-      - name: Run security scan (simulated)
+
+      - name: Run security scan simulated
         run: |
           echo "Running security scan..."
-          echo " No critical vulnerabilities found"
+          echo "No critical vulnerabilities found"
+
   deploy-to-production-automatic:
     needs: build-and-test
     runs-on: ubuntu-latest
-    environment: production-auto # No approval required!
+    environment: production-auto
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Automatic deployment to Production
         run: |
           echo "========================================="
@@ -36,34 +47,27 @@ jobs:
           echo "========================================="
           echo "Application version: $(git rev-parse --short HEAD)"
           echo "Deployment timestamp: $(date)"
-          echo ""
-          echo " This deployment happened AUTOMATICALLY without human approval!"
-          echo " Production deployment successful!"
+          echo "This deployment happened AUTOMATICALLY without human approval!"
+          echo "Production deployment successful!"
           echo "========================================="
-          echo ""
-          echo "In a real scenario, this would deploy to:"
-          echo " • Cloud servers"
-          echo " • Kubernetes clusters"
-          echo " • Azure Web Apps"
-          echo " • Or any other production infrastructure"
-      - name: Post-deployment notification (simulated)
+
+      - name: Post-deployment notification simulated
         run: |
-          echo " Sending deployment notification to team..."
-          echo " Subject: [AUTO] New version $(git rev-parse --short HEAD) deployed to Production"
-          echo " Status: SUCCESS"
-      
-      - name: Set Up Docker Buildx
+          echo "Sending deployment notification to team..."
+          echo "Subject: [AUTO] New version $(git rev-parse --short HEAD) deployed to Production"
+          echo "Status: SUCCESS"
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to DockerHub
+      - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/nodejs-ci-example-:${{ github.sha }}
-      
+          tags: ${{ secrets.DOCKER_USERNAME }}/nodejs-ci-example-:${{ github.sha }}

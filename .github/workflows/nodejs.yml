@@ -1,66 +1,70 @@
-name: Automatic Production Deployment (CD)
-
+# .github/workflows/nodejs.yml
+name: Node.js CI/CD
 on:
   push:
     branches: [ main ]
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
+  pull_request:
+    branches: [ main ]
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
-
+          node-version: '20'
       - name: Install dependencies
         run: npm install
-
       - name: Run tests
         run: npm test
-
-      - name: Run security scan simulated
-        run: |
-          echo "Running security scan..."
-          echo "No critical vulnerabilities found"
-
-  deploy-to-production-automatic:
+  deploy-to-staging:
     needs: build-and-test
     runs-on: ubuntu-latest
-    environment: production-auto
-
+    environment: Staging
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Automatic deployment to Production
+      - name: Simulate deployment to Staging
         run: |
-          echo "========================================="
-          echo "AUTOMATIC PRODUCTION DEPLOYMENT (CD)"
-          echo "========================================="
+          echo "Deploying application to Staging environment..."
           echo "Application version: $(git rev-parse --short HEAD)"
-          echo "Deployment timestamp: $(date)"
-          echo "This deployment happened AUTOMATICALLY without human approval!"
-          echo "Production deployment successful!"
-          echo "========================================="
-
-      - name: Post-deployment notification simulated
+          echo "Deployment to Staging successful!"
+  deploy-to-production:
+    needs: deploy-to-staging # This job depends on Staging deployment passing
+    runs-on: ubuntu-latest
+    environment: Production # Specify the Production environment
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Simulate deployment to Production
         run: |
-          echo "Sending deployment notification to team..."
-          echo "Subject: [AUTO] New version $(git rev-parse --short HEAD) deployed to Production"
-          echo "Status: SUCCESS"
+          echo "Deploying application to Production environment..."
+          echo "Application version: $(git rev-parse --short HEAD)"
+      - name: Simulated health check
+        run: |
+          # SIMULATION ONLY: In a real CD pipeline, this would call your application's /health endpoint
+          # Example real command: curl -f https://yourapp.com/health || exit 1
+          echo "Running health checks..."
+          echo "Health endpoint: https://yourapp.com/health (simulated)"
 
-      - name: Set up Docker Buildx
+          # Simulate a random health check result (50% pass, 50% fail)
+          if (( RANDOM % 2 == 0 )); then
+            echo "Health check passed!"
+            echo "Deployment to Production successful!"
+          else
+            echo "Simulated health check failure!"
+            echo "HTTP 500 - Service Unhealthy"
+            exit 1 # Exit with non-zero code to indicate failure -> triggers rollback
+          fi
+
+    # step9
+
+      - name: Set Up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Docker Hub
+      - name: Log in to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -71,3 +75,5 @@ jobs:
         with:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/nodejs-ci-example-:${{ github.sha }}
+
+
