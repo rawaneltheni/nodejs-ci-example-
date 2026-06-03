@@ -70,4 +70,4 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/nodejs-ci-example-:${{ github.sha }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/nodejs-ci-example:${{ github.sha }}
