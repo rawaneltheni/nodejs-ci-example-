@@ -49,15 +49,11 @@ jobs:
           echo "Running health checks..."
           echo "Health endpoint: https://yourapp.com/health (simulated)"
 
-          # Simulate a random health check result (50% pass, 50% fail)
-          if (( RANDOM % 2 == 0 )); then
-            echo "Health check passed!"
-            echo "Deployment to Production successful!"
-          else
-            echo "Simulated health check failure!"
-            echo "HTTP 500 - Service Unhealthy"
-            exit 1 # Exit with non-zero code to indicate failure -> triggers rollback
-          fi
+          # Deterministic health check (always passes) so downstream Docker steps run.
+          # To restore the random pass/fail simulation, replace this with:
+          #   if (( RANDOM % 2 == 0 )); then ... else exit 1; fi
+          echo "Health check passed!"
+          echo "Deployment to Production successful!"
 
     # step9
 
